@@ -14,6 +14,8 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+import static com.vincent.videocompressor.GLToolbox.checkGlError;
+
 @TargetApi(16)
 public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
 
@@ -158,7 +160,7 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
             }
             mFrameAvailable = false;
         }
-        mTextureRender.checkGlError("before updateTexImage");
+        checkGlError("before updateTexImage");
         mSurfaceTexture.updateTexImage();
     }
 
