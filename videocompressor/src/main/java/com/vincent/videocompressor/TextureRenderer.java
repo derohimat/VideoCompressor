@@ -1,9 +1,13 @@
 package com.vincent.videocompressor;
 
 import android.annotation.TargetApi;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
@@ -51,12 +55,14 @@ public class TextureRenderer {
     private float[] mMVPMatrix = new float[16];
     private float[] mSTMatrix = new float[16];
     private int mProgram;
-    private int mTextureID = -12345;
+    private int mTextureID;
     private int muMVPMatrixHandle;
     private int muSTMatrixHandle;
     private int maPositionHandle;
     private int maTextureHandle;
     private int rotationAngle = 0;
+
+    private GhostTextureRenderer mGhostTextureRenderer = new GhostTextureRenderer();
 
     public TextureRenderer(int rotation) {
         rotationAngle = rotation;

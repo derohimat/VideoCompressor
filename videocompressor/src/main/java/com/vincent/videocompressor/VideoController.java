@@ -2,6 +2,7 @@ package com.vincent.videocompressor;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.res.Resources;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
@@ -39,6 +40,8 @@ public class VideoController {
     private final static int PROCESSOR_TYPE_TI = 5;
     private static volatile VideoController Instance = null;
     private boolean videoConvertFirstWrite = true;
+
+    private Resources resources;
 
     interface CompressProgressListener {
         void onProgress(float percent);
@@ -96,21 +99,22 @@ public class VideoController {
     }
 
     public static class VideoConvertRunnable implements Runnable {
-
+        private Resources resources;
         private String videoPath;
         private String destPath;
 
-        private VideoConvertRunnable(String videoPath, String destPath) {
+        private VideoConvertRunnable(Resources resources, String videoPath, String destPath) {
+            this.resources = resources;
             this.videoPath = videoPath;
             this.destPath = destPath;
         }
 
-        public static void runConversion(final String videoPath, final String destPath) {
+        public static void runConversion(final Resources resources, final String videoPath, final String destPath) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        VideoConvertRunnable wrapper = new VideoConvertRunnable(videoPath, destPath);
+                        VideoConvertRunnable wrapper = new VideoConvertRunnable(resources, videoPath, destPath);
                         Thread th = new Thread(wrapper, "VideoConvertRunnable");
                         th.start();
                         th.join();
@@ -123,7 +127,7 @@ public class VideoController {
 
         @Override
         public void run() {
-            VideoController.getInstance().convertVideo(videoPath, destPath, 0, null);
+            VideoController.getInstance().convertVideo(resources, videoPath, destPath, 0, null);
         }
     }
 
@@ -156,12 +160,12 @@ public class VideoController {
      * @param dest destination directory to put result
      */
 
-public void scheduleVideoConvert(String path, String dest) {
-        startVideoConvertFromQueue(path, dest);
+public void scheduleVideoConvert(Resources resources, String path, String dest) {
+        startVideoConvertFromQueue(resources, path, dest);
     }
 
-    private void startVideoConvertFromQueue(String path, String dest) {
-        VideoConvertRunnable.runConversion(path, dest);
+    private void startVideoConvertFromQueue(Resources resources, String path, String dest) {
+        VideoConvertRunnable.runConversion(resources, path, dest);
     }
 
     @TargetApi(16)
@@ -247,8 +251,9 @@ public void scheduleVideoConvert(String path, String dest) {
      * @return
      */
     @TargetApi(16)
-    public boolean  convertVideo(final String sourcePath, String destinationPath, int quality, CompressProgressListener listener) {
+    public boolean  convertVideo(Resources resources, final String sourcePath, String destinationPath, int quality, CompressProgressListener listener) {
         this.path=sourcePath;
+        this.resources = resources;
 
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(path);
@@ -275,16 +280,17 @@ public void scheduleVideoConvert(String path, String dest) {
                 bitrate = resultWidth * resultHeight * 30;
                 break;
             case COMPRESS_QUALITY_MEDIUM:
-                resultWidth = originalWidth / 2;
-                resultHeight = originalHeight / 2;
+                resultWidth = originalWidth * 2 / 3;
+                resultHeight = originalHeight * 2 / 3;
                 bitrate = resultWidth * resultHeight * 10;
                 break;
             case COMPRESS_QUALITY_LOW:
-                resultWidth = originalWidth / 2;
-                resultHeight = originalHeight / 2;
+                resultWidth = originalWidth * 2 / 3;
+                resultHeight = originalHeight * 2 / 3;
                 bitrate = (resultWidth/2) * (resultHeight/2) * 10;
                 break;
         }
+
 
         int rotateRender = 0;
 
@@ -451,9 +457,9 @@ public void scheduleVideoConvert(String path, String dest) {
 
                             decoder = MediaCodec.createDecoderByType(inputFormat.getString(MediaFormat.KEY_MIME));
                             if (Build.VERSION.SDK_INT >= 18) {
-                                outputSurface = new OutputSurface();
+                                outputSurface = new OutputSurface(resources, resultWidth, resultHeight);
                             } else {
-                                outputSurface = new OutputSurface(resultWidth, resultHeight, rotateRender);
+                                outputSurface = new OutputSurface(resources, resultWidth, resultHeight, rotateRender);
                             }
                             decoder.configure(inputFormat, outputSurface.getSurface(), null, 0);
                             decoder.start();
