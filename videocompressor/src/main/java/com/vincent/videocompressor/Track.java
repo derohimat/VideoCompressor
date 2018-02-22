@@ -130,7 +130,7 @@ public class Track {
         } else {
             sampleDurations.add((long) 1024);
             duration = 1024;
-            isAudio = true;
+            this.isAudio = true;
             volume = 1;
             timeScale = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
             handler = "soun";
