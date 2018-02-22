@@ -1,13 +1,9 @@
 package com.vincent.videocompressor;
 
 import android.annotation.TargetApi;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
