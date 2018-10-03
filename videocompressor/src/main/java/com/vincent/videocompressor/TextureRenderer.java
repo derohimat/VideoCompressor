@@ -10,6 +10,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import static com.vincent.videocompressor.GLToolbox.checkGlError;
+import static com.vincent.videocompressor.GLToolbox.createProgram;
+
 @TargetApi(16)
 public class TextureRenderer {
 
@@ -27,33 +30,35 @@ public class TextureRenderer {
 
     private static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;\n" +
-            "uniform mat4 uSTMatrix;\n" +
-            "attribute vec4 aPosition;\n" +
-            "attribute vec4 aTextureCoord;\n" +
-            "varying vec2 vTextureCoord;\n" +
-            "void main() {\n" +
-            "  gl_Position = uMVPMatrix * aPosition;\n" +
-            "  vTextureCoord = (uSTMatrix * aTextureCoord).xy;\n" +
-            "}\n";
+                    "uniform mat4 uSTMatrix;\n" +
+                    "attribute vec4 aPosition;\n" +
+                    "attribute vec4 aTextureCoord;\n" +
+                    "varying vec2 vTextureCoord;\n" +
+                    "void main() {\n" +
+                    "  gl_Position = uMVPMatrix * aPosition;\n" +
+                    "  vTextureCoord = (uSTMatrix * aTextureCoord).xy;\n" +
+                    "}\n";
 
     private static final String FRAGMENT_SHADER =
             "#extension GL_OES_EGL_image_external : require\n" +
-            "precision mediump float;\n" +
-            "varying vec2 vTextureCoord;\n" +
-            "uniform samplerExternalOES sTexture;\n" +
-            "void main() {\n" +
-            "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
-            "}\n";
+                    "precision mediump float;\n" +
+                    "varying vec2 vTextureCoord;\n" +
+                    "uniform samplerExternalOES sTexture;\n" +
+                    "void main() {\n" +
+                    "  gl_FragColor = texture2D(sTexture, vTextureCoord);\n" +
+                    "}\n";
 
     private float[] mMVPMatrix = new float[16];
     private float[] mSTMatrix = new float[16];
     private int mProgram;
-    private int mTextureID = -12345;
+    private int mTextureID;
     private int muMVPMatrixHandle;
     private int muSTMatrixHandle;
     private int maPositionHandle;
     private int maTextureHandle;
     private int rotationAngle = 0;
+
+    private GhostTextureRenderer mGhostTextureRenderer = new GhostTextureRenderer();
 
     public TextureRenderer(int rotation) {
         rotationAngle = rotation;
@@ -143,55 +148,6 @@ public class TextureRenderer {
         mProgram = createProgram(VERTEX_SHADER, fragmentShader);
         if (mProgram == 0) {
             throw new RuntimeException("failed creating program");
-        }
-    }
-
-    private int loadShader(int shaderType, String source) {
-        int shader = GLES20.glCreateShader(shaderType);
-        checkGlError("glCreateShader type=" + shaderType);
-        GLES20.glShaderSource(shader, source);
-        GLES20.glCompileShader(shader);
-        int[] compiled = new int[1];
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-        if (compiled[0] == 0) {
-            GLES20.glDeleteShader(shader);
-            shader = 0;
-        }
-        return shader;
-    }
-
-    private int createProgram(String vertexSource, String fragmentSource) {
-        int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        if (vertexShader == 0) {
-            return 0;
-        }
-        int pixelShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        if (pixelShader == 0) {
-            return 0;
-        }
-        int program = GLES20.glCreateProgram();
-        checkGlError("glCreateProgram");
-        if (program == 0) {
-            return 0;
-        }
-        GLES20.glAttachShader(program, vertexShader);
-        checkGlError("glAttachShader");
-        GLES20.glAttachShader(program, pixelShader);
-        checkGlError("glAttachShader");
-        GLES20.glLinkProgram(program);
-        int[] linkStatus = new int[1];
-        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
-        if (linkStatus[0] != GLES20.GL_TRUE) {
-            GLES20.glDeleteProgram(program);
-            program = 0;
-        }
-        return program;
-    }
-
-    public void checkGlError(String op) {
-        int error;
-        if ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            throw new RuntimeException(op + ": glError " + error);
         }
     }
 }

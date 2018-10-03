@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String destPath = tv_output.getText().toString() + File.separator + "VID_" + new SimpleDateFormat("yyyyMMdd_HHmmss", getLocale()).format(new Date()) + ".mp4";
-                VideoCompress.compressVideoLow(tv_input.getText().toString(), destPath, new VideoCompress.CompressListener() {
+                VideoCompress.compressVideoMedium(getResources(), tv_input.getText().toString(), destPath, new VideoCompress.CompressListener() {
                     @Override
                     public void onStart() {
                         tv_indicator.setText("Compressing..." + "\n"

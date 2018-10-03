@@ -1,8 +1,12 @@
 package com.vincent.videocompressor;
 
 import android.annotation.TargetApi;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.view.Surface;
 
 import java.nio.ByteBuffer;
@@ -13,6 +17,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
+
+import static com.vincent.videocompressor.GLToolbox.checkGlError;
 
 @TargetApi(16)
 public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
@@ -27,16 +33,21 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
     private Surface mSurface;
     private final Object mFrameSyncObject = new Object();
     private boolean mFrameAvailable;
+    private GhostTextureRenderer mGhostTextureRender;
     private TextureRenderer mTextureRender;
     private int mWidth;
     private int mHeight;
     private int rotateRender = 0;
     private ByteBuffer mPixelBuf;
+    private Resources mResources;
 
-    public OutputSurface(int width, int height, int rotate) {
+    private int mGhostTextureId;
+
+    public OutputSurface(Resources resources, int width, int height, int rotate) {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException();
         }
+        mResources = resources;
         mWidth = width;
         mHeight = height;
         rotateRender = rotate;
@@ -47,11 +58,32 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         setup();
     }
 
-    public OutputSurface() {
+    public OutputSurface(Resources resources, int width, int height) {
+        mResources = resources;
+        mWidth = width;
+        mHeight = height;
         setup();
     }
 
     private void setup() {
+        mGhostTextureRender = new GhostTextureRenderer();
+        mGhostTextureRender.init();
+
+        Bitmap ghostBitmap = BitmapFactory.decodeResource(mResources, R.drawable.ghost);
+        int ghostImageWidth = ghostBitmap.getWidth();
+        int ghostImageHeight = ghostBitmap.getHeight();
+        mGhostTextureRender.updateTextureSize(ghostImageWidth, ghostImageHeight, mWidth, mHeight);
+        mGhostTextureRender.updateViewSize(mWidth, mHeight);
+
+        int[] textures = new int[1];
+        GLES20.glGenTextures(1, textures, 0);
+        mGhostTextureId = textures[0];
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGhostTextureId);
+        checkGlError("glBindTexture mGhostTextureID");
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, ghostBitmap, 0);
+        GLToolbox.initTexParams();
+        checkGlError("glTexParameter");
+
         mTextureRender = new TextureRenderer(rotateRender);
         mTextureRender.surfaceCreated();
         mSurfaceTexture = new SurfaceTexture(mTextureRender.getTextureId());
@@ -120,6 +152,7 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         mEGLContext = null;
         mEGLSurface = null;
         mEGL = null;
+        mGhostTextureRender = null;
         mTextureRender = null;
         mSurface = null;
         mSurfaceTexture = null;
@@ -158,12 +191,13 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
             }
             mFrameAvailable = false;
         }
-        mTextureRender.checkGlError("before updateTexImage");
+        checkGlError("before updateTexImage");
         mSurfaceTexture.updateTexImage();
     }
 
     public void drawImage(boolean invert) {
         mTextureRender.drawFrame(mSurfaceTexture, invert);
+        mGhostTextureRender.renderTexture(mGhostTextureId);
     }
 
     @Override
