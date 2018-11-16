@@ -9,7 +9,7 @@ public class VideoMetadata {
     private String sourcePath;
     private String destinationPath;
     private String width = "";
-    private String heightString = "";
+    private String height = "";
     private String rotation = "";
     private Long duration = 0L;
 
@@ -37,12 +37,12 @@ public class VideoMetadata {
         this.width = width;
     }
 
-    public String getHeightString() {
-        return heightString;
+    public String getHeight() {
+        return height;
     }
 
-    public void setHeightString(String heightString) {
-        this.heightString = heightString;
+    public void setHeight(String height) {
+        this.height = height;
     }
 
     public String getRotation() {

@@ -254,7 +254,7 @@ public void scheduleVideoConvert(String path, String dest) {
 //        long duration = Long.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000;
 
         String width = matadata.getWidth();
-        String height = matadata.getHeightString();
+        String height = matadata.getHeight();
         String rotation = matadata.getRotation();
         long duration = matadata.getDuration() * 1000;
 
