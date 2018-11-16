@@ -20,9 +20,9 @@ import java.nio.channels.FileChannel;
 
 @SuppressLint("NewApi")
 public class VideoCompressor {
-    static final int COMPRESS_QUALITY_HIGH = 1;
-    static final int COMPRESS_QUALITY_MEDIUM = 2;
-    static final int COMPRESS_QUALITY_LOW = 3;
+    public static final int COMPRESS_QUALITY_HIGH = 1;
+    public static final int COMPRESS_QUALITY_MEDIUM = 2;
+    public static final int COMPRESS_QUALITY_LOW = 3;
 
     public static File cachedFile;
     public String path;
@@ -37,7 +37,7 @@ public class VideoCompressor {
     private static volatile VideoCompressor Instance = null;
     private boolean videoConvertFirstWrite = true;
 
-    interface CompressProgressListener {
+    public interface CompressProgressListener {
         void onProgress(float percent);
     }
 
@@ -244,9 +244,9 @@ public void scheduleVideoConvert(String path, String dest) {
      * @return
      */
     @TargetApi(16)
-    public boolean  convertVideo(final VideoMetadata matadata, String destinationPath, int quality, CompressProgressListener listener) {
+    public boolean  convertVideo(VideoMetadata matadata, int quality, CompressProgressListener listener) {
         this.path = matadata.getSourcePath();
-
+        String destinationPath = matadata.getDestinationPath();
 //        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
 //        retriever.setDataSource(path);
 //        String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
