@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
@@ -31,7 +30,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation files('libs/isoparser-1.0.6.jar')
     implementation files('libs/aspectjrt-1.7.3.jar')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {
     mavenCentral()

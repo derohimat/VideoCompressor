@@ -7,7 +7,6 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.util.Log;
 
@@ -255,7 +254,7 @@ public void scheduleVideoConvert(String path, String dest) {
 //        long duration = Long.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000;
 
         String width = matadata.getWidth();
-        String height = matadata.getHeight();
+        String height = matadata.getHeightString();
         String rotation = matadata.getRotation();
         long duration = matadata.getDuration() * 1000;
 
